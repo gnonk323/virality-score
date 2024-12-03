@@ -1,6 +1,5 @@
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
-from speech_module import speak_phrase
 import creds
 
 username = 'b9hex'
@@ -10,6 +9,10 @@ redirect_uri = 'http://google.com/callback/'
 scope = "user-read-playback-state user-modify-playback-state playlist-modify-private playlist-modify-public"
 
 device_id = creds.device_id
+
+oauth_object = SpotifyOAuth(client_ID, client_secret, redirect_uri, scope=scope)
+token = oauth_object.get_access_token(as_dict=False)
+spotifyObject = spotipy.Spotify(auth=token)
 
 def find_songs(song, artist, num_songs):
     query = f"track:{song} artist:{artist}"
