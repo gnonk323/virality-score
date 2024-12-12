@@ -1,15 +1,36 @@
-from flask import Flask, request
+from flask import Flask, request, jsonify
 from flask_cors import CORS
+from spotify import find_songs, get_song
 
 app = Flask(__name__)
 CORS(app)
 
 # Route to call spotify API to get requested song
-@app.route("/api/find-songs", methods=['POST'])
-def return_songs():
-    return find_songs(request.get_json(["song_request"]))
+@app.route("/api/search-songs", methods=['GET'])
+def search_songs():
+    query = request.args.get('query')
+    artist = request.args.get('artist')
+    num_songs = request.args.get('num_songs', type=int)
+
+    if not query and not artist:
+        return jsonify({"error": "You must provide at least a 'query' or 'artist' parameter."})
+    
+    songs = find_songs(query=query, artist=artist, num_songs=num_songs)
+    return jsonify(songs)
+
+@app.route("/api/get-song-info", methods=['GET'])
+def get_song_info():
+    song_id = request.args.get('song_id')
+    return jsonify(get_song(song_id))
+
+@app.route("/api/test", methods=['GET'])
+def test():
+    return {"message": "Hello, World!"}
 
 # Route to run the model on the given parameters
-@app.route("/api/calculate-virality", methods=['POST'])
-def return_virality():
-    return calculate_virality(request.get_json(["song_info"]))
+# @app.route("/api/calculate-virality", methods=['POST'])
+# def return_virality():
+#     return calculate_virality(request.get_json(["song_info"]))
+
+if __name__ == "__main__":
+    app.run(debug=True)

@@ -1,57 +1,127 @@
 import './App.css'
-import { Button, Typography, Input, ConfigProvider } from 'antd'
-import { SearchOutlined } from '@ant-design/icons';
-import { useState } from 'react';
+import { Button, Typography, Input, Slider, Col, ConfigProvider, notification } from 'antd'
+import { SearchOutlined, LeftOutlined } from '@ant-design/icons'
+import { useState, useEffect } from 'react'
 
-const { Title, Paragraph, Text, Link } = Typography;
+const { Title, Paragraph, Text } = Typography
 
 function App() {
   const [songName, setSongName] = useState('')
   const [artist, setArtist] = useState('')
+  const [numSongs, setNumSongs] = useState(5)
+  const [songs, setSongs] = useState([])
+  const [selectedSong, setSelectedSong] = useState(null)
 
-  const searchSongs = () => {
+  async function getSongInfo(song_id) {
+    try {
+      const response = await fetch(
+        `http://127.0.0.1:5000/api/get-song-info?song_id=${song_id}`
+      )
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      const data = await response.json()
+      console.log("Successfully retreieved song info:", data)
+      return data
+    } catch (error) {
+      console.error("Error:", error)
+    }
+    return null
+  }
+
+  const searchSongs = async () => {
     if (songName === '' && artist === '') {
-      alert('Please enter song name or artist')
       return
-    } else {
-      console.log('Song Name:', songName)
-      console.log('Artist:', artist)
+    }
+    if (songName === 'balls') {
+      try {
+        const response = await fetch(
+          'http://127.0.0.1:5000/api/test'
+        )
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+        notification.success({
+          message: "API Health Check",
+          description: "The API is working correctly. Hello, World!",
+          placement: "bottomRight"
+        })
+      } catch (error) {
+        console.error("Error:", error)
+        notification.error({
+          message: "API Health Check",
+          description: "The API is not working correctly. Open the console for more information.",
+          placement: "bottomRight"
+        })
+      }
+      return
+    }
+    try {
+      const response = await fetch(
+        `http://127.0.0.1:5000/api/search-songs?query=${songName}&artist=${artist}&num_songs=${numSongs}`
+      )
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      const data = await response.json()
+      console.log("Successfully retreieved songs:", data)
+      setSongs(data) // Update songs state with fetched data
+    } catch (error) {
+      console.error("Error:", error)
+      alert("Error fetching songs")
     }
   }
 
   function SongResult({ song }) {
     return (
-      <div className='flex justify-between pr-8 p-2 rounded-md shadow-sm hover:shadow-md transition-all hover:cursor-pointer hover:border-green-500 border-2'>
-        <div className='flex items-center'>
-          <img src={song.album.cover_medium} alt='Album Cover' className='w-16 h-16 mr-4 rounded-md' />
-          <div className='flex flex-col'>
-            <Title level={5}>{song.title}</Title>
-            <Text type='secondary'>{song.artist.name}</Text>
+      <a onClick={() => setSelectedSong(getSongInfo(song.id))}>
+        <div className='flex justify-between items-center pr-8 p-2 rounded-md shadow-sm hover:shadow-md transition-all hover:cursor-pointer hover:border-green-500 border-2'>
+          <div className='flex items-center'>
+            <img
+              src={song.image}
+              alt={`${song.alubum} cover`}
+              className='w-16 h-16 mr-4 rounded-md'
+            />
+            <div className='flex flex-col text-start'>
+              <Text strong>{song.name}</Text>
+              <Text type='secondary'>{song.artist}</Text>
+              <Text type='secondary' italic>{song.album}</Text>
+            </div>
+          </div>
+          <div className='flex flex-col items-end text-end gap-1'>
+            <Text type='secondary'>{Math.floor(song.duration_ms / 60000)}:{('0' + Math.floor((song.duration_ms % 60000) / 1000)).slice(-2)} min</Text>
+            <a href={song.url} target='_blank' rel='noopener noreferrer'>
+              <Button size='small'>Listen</Button>
+            </a>
           </div>
         </div>
-        <div className='flex items-center'>
-          <Text type='secondary'>{song.album.title}</Text>
-        </div>
-        <div className='flex items-center'>
-          <Text type='secondary'>{song.duration}</Text>
-        </div>
-      </div>
-    )
+      </a>
+    );
   }
 
   return (
-    <>
-      <ConfigProvider
-        theme={{
-          token: {
-            colorPrimary: '#16a34a',
-            borderRadius: 6,
-          },
-        }}
-      >
+    <ConfigProvider
+      theme={{
+        token: {
+          colorPrimary: '#15803d',
+          borderRadius: 6,
+        },
+      }}
+    >
+      {selectedSong ? (
+        <>
+          <div className='flex justify-center relative items-center'>
+            <Button className='absolute left-0' icon={<LeftOutlined />} iconPosition='left' onClick={() => setSelectedSong(null)}>Back</Button>
+            <Title>Predict Virality</Title>
+          </div>
+          <div>
+
+          </div>
+        </>
+      ) : (
         <div>
           <Title>Search Songs</Title>
-          <div className='flex px-[15vw] gap-2 mb-4'>
+          <div className='flex px-[10vw] gap-2 mb-4 items-center'>
             <Input placeholder='Song name' onChange={(e) => setSongName(e.target.value)} />
             <Input placeholder='Artist' onChange={(e) => setArtist(e.target.value)} />
             <Button
@@ -59,21 +129,30 @@ function App() {
               icon={<SearchOutlined/>}
               iconPosition='start'
               onClick={searchSongs}
+              disabled={songName === '' && artist === ''}
             >
               Search
             </Button>
+            <Col span={5}>
+              <Slider min={1} max={15} defaultValue={5} onChange={(newVal) => setNumSongs(newVal)} />
+            </Col>
           </div>
-          <div className='flex flex-col gap-1'>
-            <SongResult song={{
-              title: 'Song Title',
-              artist: { name: 'Artist Name' },
-              album: { title: 'Album Title', cover_medium: 'https://via.placeholder.com/150' },
-              duration: '3:30'
-            }} />
+          <div>
+
+            <div>
+              {songs.length > 0 ? (
+                <Paragraph type='secondary' italic>Select a song to predict it's virality score!</Paragraph>
+              ) : null}
+            </div>
+            <div className='flex flex-col gap-1'>
+              {songs.map((song, index) => (
+                <SongResult key={index} song={song} />
+              ))}
+            </div>
           </div>
         </div>
-      </ConfigProvider>
-    </>
+      )}
+    </ConfigProvider>
   )
 }
 
