@@ -12,22 +12,22 @@ function App() {
   const [songs, setSongs] = useState([])
   const [selectedSong, setSelectedSong] = useState(null)
 
-  async function getSongInfo(song_id) {
-    try {
-      const response = await fetch(
-        `http://127.0.0.1:5000/api/get-song-info?song_id=${song_id}`
-      )
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-      const data = await response.json()
-      console.log("Successfully retreieved song info:", data)
-      return data
-    } catch (error) {
-      console.error("Error:", error)
-    }
-    return null
-  }
+  // async function getSongInfo(song_id) {
+  //   try {
+  //     const response = await fetch(
+  //       `http://127.0.0.1:5000/api/get-song-info?song_id=${song_id}`
+  //     )
+  //     if (!response.ok) {
+  //       throw new Error(`HTTP error! status: ${response.status}`)
+  //     }
+  //     const data = await response.json()
+  //     console.log("Successfully retreieved song info:", data)
+  //     return data
+  //   } catch (error) {
+  //     console.error("Error:", error)
+  //   }
+  //   return null
+  // }
 
   const searchSongs = async () => {
     if (songName === '' && artist === '') {
@@ -58,7 +58,7 @@ function App() {
     }
     try {
       const response = await fetch(
-        `http://127.0.0.1:5000/api/search-songs?query=${songName}&artist=${artist}&num_songs=${numSongs}`
+        `http://127.0.0.1:5000/api/search-songs-csv?song_name=${songName}&artist=${artist}&num_songs=${numSongs}`
       )
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
@@ -74,23 +74,23 @@ function App() {
 
   function SongResult({ song }) {
     return (
-      <a onClick={() => setSelectedSong(getSongInfo(song.id))}>
-        <div className='flex justify-between items-center pr-8 p-2 rounded-md shadow-sm hover:shadow-md transition-all hover:cursor-pointer hover:border-green-500 border-2'>
+      <a onClick={() => setSelectedSong(song)}>
+        <div className='flex justify-between items-center py-3 px-4 rounded-md shadow-sm hover:shadow-md transition-all hover:cursor-pointer hover:border-green-500 border-2'>
           <div className='flex items-center'>
-            <img
+            {/* <img
               src={song.image}
               alt={`${song.alubum} cover`}
               className='w-16 h-16 mr-4 rounded-md'
-            />
+            /> */}
             <div className='flex flex-col text-start'>
-              <Text strong>{song.name}</Text>
-              <Text type='secondary'>{song.artist}</Text>
-              <Text type='secondary' italic>{song.album}</Text>
+              <Text strong>{song.Track}</Text>
+              <Text type='secondary'>{song.Artist}</Text>
+              <Text type='secondary' italic>{song.Album}</Text>
             </div>
           </div>
           <div className='flex flex-col items-end text-end gap-1'>
-            <Text type='secondary'>{Math.floor(song.duration_ms / 60000)}:{('0' + Math.floor((song.duration_ms % 60000) / 1000)).slice(-2)} min</Text>
-            <a href={song.url} target='_blank' rel='noopener noreferrer'>
+            <Text type='secondary'>{Math.floor(song.Duration_ms / 60000)}:{('0' + Math.floor((song.Duration_ms % 60000) / 1000)).slice(-2)} min</Text>
+            <a href={song.Url_spotify} target='_blank' rel='noopener noreferrer'>
               <Button size='small'>Listen</Button>
             </a>
           </div>
@@ -115,7 +115,15 @@ function App() {
             <Title>Predict Virality</Title>
           </div>
           <div>
-
+            <Paragraph>Danceability: {selectedSong.Danceability}</Paragraph>
+            <Paragraph>Energy: {selectedSong.Energy}</Paragraph>
+            <Paragraph>Loudness: {selectedSong.Loudness}</Paragraph>
+            <Paragraph>Speechiness: {selectedSong.Speechiness}</Paragraph>
+            <Paragraph>Acousticness: {selectedSong.Acousticness}</Paragraph>
+            <Paragraph>Instrumentalness: {selectedSong.Instrumentalness}</Paragraph>
+            <Paragraph>Liveness: {selectedSong.Liveness}</Paragraph>
+            <Paragraph>Valence: {selectedSong.Valence}</Paragraph>
+            <Paragraph>Tempo: {selectedSong.Tempo}</Paragraph>
           </div>
         </>
       ) : (

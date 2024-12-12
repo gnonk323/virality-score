@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from spotify import find_songs, get_song
+from spotify import find_songs, get_song, find_songs_from_csv
 
 app = Flask(__name__)
 CORS(app)
@@ -26,6 +26,14 @@ def get_song_info():
 @app.route("/api/test", methods=['GET'])
 def test():
     return {"message": "Hello, World!"}
+
+@app.route("/api/search-songs-csv", methods=['GET'])
+def search_songs_csv():
+    song_name = request.args.get('song_name')
+    artist = request.args.get('artist')
+    num_songs = request.args.get('num_songs', type=int)
+
+    return jsonify(find_songs_from_csv(song_name=song_name, artist=artist, num_songs=num_songs))
 
 # Route to run the model on the given parameters
 # @app.route("/api/calculate-virality", methods=['POST'])

@@ -1,12 +1,33 @@
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 import creds
+import pandas as pd
 
 CLIENT_ID = creds.spotify_client_ID
 CLIENT_SECRET = creds.spotify_client_secret
 
 auth_manager = SpotifyClientCredentials(client_id=CLIENT_ID, client_secret=CLIENT_SECRET)
 sp = spotipy.Spotify(auth_manager=auth_manager)
+
+def find_songs_from_csv(song_name=None, artist=None, num_songs=5, csv_file="data/Spotify_Youtube.csv"):
+    if not song_name and not artist:
+        return {"error": "You must provide at least a 'song_name' or 'artist' parameter."}
+    
+    df = pd.read_csv(csv_file)
+
+    if song_name and artist:
+        filtered_df = df[(df['Track'].str.contains(song_name, case=False, na=False)) &
+                         (df['Artist'].str.contains(artist, case=False, na=False))]
+    elif song_name:
+        filtered_df = df[df['Track'].str.contains(song_name, case=False, na=False)]
+    elif artist:
+        filtered_df = df[df['Artist'].str.contains(artist, case=False, na=False)]
+
+    top_songs = filtered_df.head(num_songs)
+
+    songs_list = top_songs.to_dict(orient='records')
+
+    return songs_list
 
 def find_songs(query=None, artist=None, num_songs=5):
     """Fetch the top N songs from Spotify based on the search query or artist."""
@@ -39,6 +60,5 @@ def get_song(song_id):
 
 
 if __name__ == "__main__":
-    songs = find_songs(query='thrash particle', num_songs=5)
-    song = get_song(songs[0])
-    print(song)
+    songs = find_songs_from_csv(song_name="despacito")
+    print(songs)
