@@ -15,6 +15,11 @@ def find_songs_from_csv(song_name=None, artist=None, num_songs=5, csv_file="data
     
     df = pd.read_csv(csv_file)
 
+    min_loudness = df['Loudness'].min()
+    max_loudness = df['Loudness'].max()
+
+    df['Loudness'] = round((df['Loudness'] - min_loudness) / (max_loudness - min_loudness), 4)
+
     if song_name and artist:
         filtered_df = df[(df['Track'].str.contains(song_name, case=False, na=False)) &
                          (df['Artist'].str.contains(artist, case=False, na=False))]
@@ -60,5 +65,5 @@ def get_song(song_id):
 
 
 if __name__ == "__main__":
-    songs = find_songs_from_csv(song_name="despacito")
+    songs = find_songs_from_csv(artist="radiohead")
     print(songs)

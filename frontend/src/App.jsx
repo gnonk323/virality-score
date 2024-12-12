@@ -29,6 +29,12 @@ function App() {
   //   return null
   // }
 
+  const calculateViralityScore = (song) => {
+    score = 0.2 + 0.0186 * song.Danceability + 0.0019 * song.Energy + 0.1286 * song.Loudness + 0.02068 * song.Acousticness
+    console.log(score)
+    return score.toFixed(2)
+  }
+
   const searchSongs = async () => {
     if (songName === '' && artist === '') {
       return
@@ -114,16 +120,18 @@ function App() {
             <Button className='absolute left-0' icon={<LeftOutlined />} iconPosition='left' onClick={() => setSelectedSong(null)}>Back</Button>
             <Title>Predict Virality</Title>
           </div>
-          <div>
-            <Paragraph>Danceability: {selectedSong.Danceability}</Paragraph>
-            <Paragraph>Energy: {selectedSong.Energy}</Paragraph>
-            <Paragraph>Loudness: {selectedSong.Loudness}</Paragraph>
-            <Paragraph>Speechiness: {selectedSong.Speechiness}</Paragraph>
-            <Paragraph>Acousticness: {selectedSong.Acousticness}</Paragraph>
-            <Paragraph>Instrumentalness: {selectedSong.Instrumentalness}</Paragraph>
-            <Paragraph>Liveness: {selectedSong.Liveness}</Paragraph>
-            <Paragraph>Valence: {selectedSong.Valence}</Paragraph>
-            <Paragraph>Tempo: {selectedSong.Tempo}</Paragraph>
+          <div className='flex flex-col'>
+            <div className='grid grid-cols-2 w-64 mx-auto mb-4'>
+              <Text>Danceability:</Text>
+              <Text>{selectedSong.Danceability}</Text>
+              <Text>Energy:</Text>
+              <Text>{selectedSong.Energy}</Text>
+              <Text>Loudness:</Text>
+              <Text>{selectedSong.Loudness}</Text>
+              <Text>Acousticness:</Text>
+              <Text>{selectedSong.Acousticness}</Text>
+            </div>
+            <Text strong>Virality Score: {(0.2 + 0.0186 * selectedSong.Danceability + 0.0019 * selectedSong.Energy + 0.1286 * selectedSong.Loudness + 0.02068 * selectedSong.Acousticness).toFixed(3)}</Text>
           </div>
         </>
       ) : (
